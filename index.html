@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Johns Hopkins University Practical Machine Learning Project</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Johns Hopkins University Practical Machine Learning Project">
+  <meta name="author" content="Mohsen Asgari">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Johns Hopkins University Practical Machine Learning Project</h1>
+    <h2></h2>
+    <p>Mohsen Asgari<br/>Portfolio Manager | msn.asg@gmail.com</p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Phase 1 : Loading Packages and Downloading the required Data</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>library(caret)</p>
+
+<p>library(AppliedPredictiveModeling)</p>
+
+<p>library(kernlab)</p>
+
+<p>library(randomForest)</p>
+
+<p>trainUrl &lt;- &quot;<a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv</a>&quot;</p>
+
+<p>download.file(trainUrl, destfile = &quot;E:/Coursera/train.csv&quot;)</p>
+
+<p>testUrl &lt;- &quot;<a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv</a>&quot;</p>
+
+<p>download.file(testUrl, destfile = &quot;E:/Coursera/train.csv&quot;)</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>Phase 2: Reading Data into the directories</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>traindata &lt;- read.csv(&quot;E:/Coursera/train.csv&quot;,  na.strings=c(&quot;NA&quot;,&quot;#DIV/0!&quot;,&quot;&quot;), header= TRUE)</p>
+
+<p>testdata &lt;- read.csv(&quot;E:/Coursera/train.csv&quot;, na.strings=c(&quot;NA&quot;,&quot;#DIV/0!&quot;,&quot;&quot;), header= TRUE)</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Phase 3: Data preprocessing</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>traindata &lt;- traindata[ , colSums(is.na(traindata)) == 0]</p>
+
+<p>testdata &lt;-  testdata[ , colSums(is.na(testdata)) == 0]</p>
+
+<p>nearZeroColumns &lt;- nearZeroVar(traindata, saveMetrics = TRUE)</p>
+
+<p>traindata &lt;- traindata[, nearZeroColumns$nzv==FALSE]</p>
+
+<p>traindata$X &lt;- NULL            </p>
+
+<p>traindata$user_name &lt;- NULL</p>
+
+<p>traindata$cvtd_timestamp &lt;- NULL</p>
+
+<p>traindata$row.names &lt;- NULL</p>
+
+<p>traindata$new_window &lt;- NULL</p>
+
+<p>traindata$raw_timestamp_part_1 &lt;- NULL</p>
+
+<p>traindata$raw_timestamp_part_2 &lt;- NULL</p>
+
+<p>traindata$num_window &lt;- NULL</p>
+
+<p>testdata$X &lt;- NULL</p>
+
+<p>testdata$user_name &lt;- NULL</p>
+
+<p>testdata$problem_id &lt;- NULL</p>
+
+<p>testdata$cvtd_timestamp &lt;- NULL</p>
+
+<p>testdata$row.names &lt;- NULL</p>
+
+<p>testdata$new_window &lt;- NULL</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Phase 4: Spliting the train data set into two parts (Training = 60% and Test = 40%)</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>trainIndex &lt;- createDataPartition(y = traindata$classe, p=0.6,list=FALSE)</p>
+
+<p>trainPartition &lt;- traindata[trainIndex,]</p>
+
+<p>testPartition &lt;- traindata[-trainIndex,]</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h2>Phase 5: Creating models with different &#39;Alghorithm&#39;</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>set.seed(2434)</p>
+
+<p>model_nb &lt;- train(classe ~ .,  method=&quot;nb&quot;, data=trainPartition)</p>
+
+<p>model_gbm &lt;- train(classe ~ ., method = &quot;gbm&quot;, data = trainPartition)</p>
+
+<p>model_f &lt;- train(classe ~ .,  method =&quot;rf&quot;, data=trainPartition)</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
+  <hgroup>
+    <h2>Phase 6: Accuracy of the models</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>print (&quot;Naive Bayes&quot;)</p>
+
+<p>nb_accuracy &lt;- predict(model_nb, testPartition)</p>
+
+<p>print(confusionMatrix(nb_accuracy, testPartition$classe)) ### ---&gt; The accuracy = 0.7372</p>
+
+<p>print(&quot;Stochastic Gradient Boosting&quot;)</p>
+
+<p>gbm_accuracy &lt;- predict(model_gbm, testPartition)</p>
+
+<p>print(confusionMatrix(gbm_accuracy, testPartition$classe)) ### ---&gt; The accuracy = 0.958</p>
+
+<p>print(&quot;Random Forest&quot;)</p>
+
+<p>rf_accuracy &lt;- predict(model_f, testPartition)</p>
+
+<p>print(confusionMatrix(rf_accuracy, testPartition$classe))  ### ---&gt; The accuracy = 0.9894</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-7" style="background:;">
+  <hgroup>
+    <h2>Phase 7: Cross Validation</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>set.seed (1988)</p>
+
+<p>fitcontrol &lt;- trainControl(method = &quot;repeatedcv&quot;, number = 10, repeats = 10)</p>
+
+<p>model_rf_CV &lt;- train(classe ~ ., method=&quot;rf&quot;,  data=trainPartition, trControl = fitcontrol)</p>
+
+<p>rf_CV_accuracy &lt;- predict(model_rf_CV, testPartition)</p>
+
+<p>print(confusionMatrix(rf_CV_accuracy, testPartition$classe)) ### ---&gt; The accuracy = 0.9897</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-8" style="background:;">
+  <hgroup>
+    <h2>Phase 8: The 20 cases predition</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>prediction &lt;- predict(model_rf_CV, testdata)</p>
+
+<p>print(prediction)</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-9" style="background:;">
+  <hgroup>
+    <h2>Thank You For Watching</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Mohsen Asgari</p>
+
+<p>Portfolio Manager | <a href="mailto:msn.asg@gmail.com">msn.asg@gmail.com</a>  </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Phase 1 : Loading Packages and Downloading the required Data'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Phase 2: Reading Data into the directories'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Phase 3: Data preprocessing'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Phase 4: Spliting the train data set into two parts (Training = 60% and Test = 40%)'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='Phase 5: Creating models with different &#39;Alghorithm&#39;'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='Phase 6: Accuracy of the models'>
+         6
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=7 title='Phase 7: Cross Validation'>
+         7
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=8 title='Phase 8: The 20 cases predition'>
+         8
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=9 title='Thank You For Watching'>
+         9
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
